@@ -1,0 +1,8 @@
+{
+    "PluginName": "KillTracker",
+    "FullName": "KillTracker",
+    "Description": "tracks kills, deaths, resources, boss fights",
+    "Version": 1.0,
+    "MinApiVersion": 3.54,
+    "Dependencies": []
+}

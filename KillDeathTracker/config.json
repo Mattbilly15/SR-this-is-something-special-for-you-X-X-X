@@ -1,0 +1,27 @@
+{
+    "Broadcasts": {
+        "EnableKillBroadcast": true,
+        "EnableDeathBroadcast": true,
+        "EnableBossFightBroadcast": true,
+        "EnableOSDSpawnBroadcast": true,
+        "EnableElementalVeinSpawnBroadcast": true,
+        "EnablePlayerHitBroadcast": true
+    },
+    "Logging": {
+        "LogToFile": false,
+        "LogFilePath": "ArkApi/Plugins/KillTracker/Logs/"
+    },
+    "API": {
+        "SendToApi": true,
+        "ApiUrl": "https://api.bamsark.com/api/ark/event",
+        "ApiKey": "bamsark_8f7k3m9x2p4n6q1w5t0v",
+        "ServerPass": "OSDMAPTEST",
+        "DataSendInterval": 10
+    },
+    "ClusterIdProtection": {
+        "EnableClusterIdProtection": false,
+        "EnableSpoofing": false,
+        "ClusterIdPassword": "BamsArk",
+        "SpoofedClusterId": "Invalid"
+    }
+}

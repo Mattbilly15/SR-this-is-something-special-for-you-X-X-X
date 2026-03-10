@@ -1,0 +1,76 @@
+bool FromHarvest = false;
+
+void Hook_UPrimalHarvestingComponent_GiveHarvestResource(UPrimalHarvestingComponent* _this, UPrimalInventoryComponent* invComp, float AdditionalEffectiveness, TSubclassOf<UDamageType> DamageTypeClass, AActor* ToActor, TArray<FHarvestResourceEntry>* HarvestResourceEntryOverrides)
+{
+	if (ToActor && ToActor->TargetingTeamField() >= 50000)
+		FromHarvest = true;
+
+	UPrimalHarvestingComponent_GiveHarvestResource_original(_this, invComp, AdditionalEffectiveness, DamageTypeClass, ToActor, HarvestResourceEntryOverrides);
+
+	FromHarvest = false;
+}
+
+void Hook_UAnimInstance_TriggerAnimNotifies(UAnimInstance* _this, float DeltaSeconds, __int64 bForceFireNotifies)
+{
+	static FName DelicateHarvest("HarvestEnd", EFindName::FNAME_Find); //required to detect moschops and therizino harvest.
+	//static FName PowerHarvest("PowerHarvestEnd", EFindName::FNAME_Find); //therizino specific harvest, most likely the top one catches this too, so not required
+
+	if (_this)
+	{
+		for (const auto& AnimNotify : _this->AnimNotifiesField())
+		{
+			if (!AnimNotify)
+			{
+				continue;
+			}
+
+			if (AnimNotify->NotifyNameField() == DelicateHarvest)
+			{
+				FromHarvest = true;
+			}
+		}
+	}
+
+	UAnimInstance_TriggerAnimNotifies_original(_this, DeltaSeconds, bForceFireNotifies);
+
+	FromHarvest = false;
+}
+
+int Hook_UPrimalInventoryComponent_IncrementItemTemplateQuantity(UPrimalInventoryComponent* _this, TSubclassOf<UPrimalItem> ItemTemplate, int amount, bool bReplicateToClient, bool bIsBlueprint, UPrimalItem** UseSpecificItem, UPrimalItem** IncrementedItem, bool bRequireExactClassMatch, bool bIsCraftingResourceConsumption, bool bIsFromUseConsumption, bool bIsArkTributeItem, bool ShowHUDNotification, bool bDontRecalcSpoilingTime, bool bDontExceedMaxItems)
+{
+	if (FromHarvest && _this && amount > 0)
+	{
+		AActor* InvOwner = _this->GetOwner();
+
+		uint64 SteamID = NULL;
+
+		if (InvOwner->IsA(APrimalDinoCharacter::StaticClass()))
+		{
+			APrimalDinoCharacter* Dino = static_cast<APrimalDinoCharacter*>(InvOwner);
+			if (Dino->RiderField().Get())
+			{
+				SteamID = GetSteamIDFromCharacter(Dino->RiderField().Get());
+			}
+			else if (Dino->CarryingDinoField().Get())
+			{
+				APrimalDinoCharacter* CarryingDino = Dino->CarryingDinoField().Get();
+				if (CarryingDino->RiderField().Get())
+				{
+					SteamID = GetSteamIDFromCharacter(CarryingDino->RiderField().Get());
+				}
+			}
+		}
+		else if (InvOwner->IsA(AShooterCharacter::StaticClass()))
+		{
+			SteamID = GetSteamIDFromCharacter(static_cast<AShooterCharacter*>(InvOwner));
+		}
+
+		if (SteamID != NULL)
+		{
+			//item count: amount
+			//item bp path: GetBlueprint(ItemTemplate.uClass->GetDefaultObject(true)
+		}
+	}
+
+	return UPrimalInventoryComponent_IncrementItemTemplateQuantity_original(_this, ItemTemplate, amount, bReplicateToClient, bIsBlueprint, UseSpecificItem, IncrementedItem, bRequireExactClassMatch, bIsCraftingResourceConsumption, bIsFromUseConsumption, bIsArkTributeItem, ShowHUDNotification, bDontRecalcSpoilingTime, bDontExceedMaxItems);
+}
